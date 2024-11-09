@@ -1,8 +1,8 @@
 // server.js
 
 const WebSocket = require('ws');
-const express=require('express');
-const app=express();
+const express = require('express')
+const app = express()
 // Create a WebSocket server on port 8080
 const wss = new WebSocket.Server({ port: 3000 });
 
@@ -32,6 +32,15 @@ wss.on('connection', (ws) => {
 });
 
 console.log('WebSocket server is running on ws://localhost:3000');
-app.listen(3001,()=>{
-    console.log("Server run on port 3001");
+
+
+
+const port = 3001
+
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
 })
