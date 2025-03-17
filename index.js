@@ -35,6 +35,9 @@ wss.on('connection', (ws) => {
   });
 });
 
+app.get('/',(req,res)=>{
+  res.send("hello client!");
+})
 // Start the server
 const PORT = 8080;
 server.listen(PORT, () => {
