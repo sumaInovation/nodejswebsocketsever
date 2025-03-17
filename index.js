@@ -6,6 +6,9 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
+// Store client data in an object (key: userId, value: array of values)
+const clientData = {};
+
 // WebSocket connection handler
 wss.on('connection', (ws) => {
   console.log('Client connected');
@@ -17,15 +20,26 @@ wss.on('connection', (ws) => {
     try {
       // Parse the JSON payload
       const data = JSON.parse(message);
+      const { userId, values } = data;
 
-      // Broadcast the message to all connected clients (including NodeMCU 2)
+    
+
+      // Update or add the data for the userId
+      clientData[userId] = values; // Replace or add the new values for the userId
+
+      
+      console.log('Current clientData:', clientData);
+
+      // Broadcast the updated clientData to all connected clients
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify(data));
+          client.send(JSON.stringify(clientData));
         }
       });
     } catch (error) {
-      console.error('Error parsing JSON:', error);
+      console.error('Error processing message:', error.message);
+      // Send an error message back to the client
+      ws.send(JSON.stringify({ error: error.message }));
     }
   });
 
@@ -35,9 +49,11 @@ wss.on('connection', (ws) => {
   });
 });
 
-app.get('/',(req,res)=>{
-  res.send("hello client!");
-})
+// HTTP route
+app.get('/', (req, res) => {
+  res.send('Hello client!');
+});  
+
 // Start the server
 const PORT = 8080;
 server.listen(PORT, () => {
