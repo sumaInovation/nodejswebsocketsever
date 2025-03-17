@@ -1,28 +1,32 @@
-// server.js
-
+const express = require('express');
+const http = require('http');
 const WebSocket = require('ws');
-const express = require('express')
-const app = express()
-// Create a WebSocket server on port 8080
-const wss = new WebSocket.Server({ port: 3000 });
 
-// Event listener for new client connections
+const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+
+// WebSocket connection handler
 wss.on('connection', (ws) => {
-  console.log('New client connected');
+  console.log('Client connected');
 
-  // Send a welcome message to the newly connected client
-  ws.send('Welcome to the WebSocket server!');
-
-  // Handle messages received from the client
+  // Handle incoming messages from clients
   ws.on('message', (message) => {
     console.log(`Received: ${message}`);
-    
-    // Broadcast the received message to all connected clients
-    wss.clients.forEach((client) => {
-      if (client !== ws && client.readyState === WebSocket.OPEN) {
-        client.send(message);
-      }
-    });
+
+    try {
+      // Parse the JSON payload
+      const data = JSON.parse(message);
+
+      // Broadcast the message to all connected clients (including NodeMCU 2)
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify(data));
+        }
+      });
+    } catch (error) {
+      console.error('Error parsing JSON:', error);
+    }
   });
 
   // Handle client disconnection
@@ -31,16 +35,9 @@ wss.on('connection', (ws) => {
   });
 });
 
-console.log('WebSocket server is running on ws://localhost:3000');
-
-
-
-const port = 3001
-
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
-
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+// Start the server
+const PORT = 8080;
+server.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`WebSocket server is running on ws://localhost:${PORT}`);
+});
