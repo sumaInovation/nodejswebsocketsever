@@ -40,7 +40,10 @@ wss.on('connection', (ws) => {
       // Broadcast the updated clientData to all connected clients
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
+          console.log('send:')
+          console.log(clientData)
           client.send(JSON.stringify(clientData));
+
         }
       });
     } catch (error) {
