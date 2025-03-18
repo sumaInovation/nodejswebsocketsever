@@ -22,12 +22,19 @@ wss.on('connection', (ws) => {
       const data = JSON.parse(message);
       const { userId, values } = data;
 
-    
+      // Check if all values are zero
+      const allValuesZero = values.every((value) => value === 0);
 
-      // Update or add the data for the userId
-      clientData[userId] = values; // Replace or add the new values for the userId
+      if (allValuesZero) {
+        // Delete the user data if all values are zero
+        delete clientData[userId];
+        console.log(`Deleted data for user: ${userId}`);
+      } else {
+        // Update or add the data for the userId
+        clientData[userId] = values; // Replace or add the new values for the userId
+        console.log(`Updated data for user: ${userId}`);
+      }
 
-      
       console.log('Current clientData:', clientData);
 
       // Broadcast the updated clientData to all connected clients
@@ -39,7 +46,7 @@ wss.on('connection', (ws) => {
     } catch (error) {
       console.error('Error processing message:', error.message);
       // Send an error message back to the client
-      ws.send(JSON.stringify({ error: error.message }));
+      ws.send(JSON.stringify({ error: 'Invalid message format' }));
     }
   });
 
@@ -52,7 +59,7 @@ wss.on('connection', (ws) => {
 // HTTP route
 app.get('/', (req, res) => {
   res.send('Hello client!');
-});  
+});
 
 // Start the server
 const PORT = 8080;
